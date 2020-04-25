@@ -3,6 +3,7 @@ Despesas pela Cota para Exercício da Atividade Parlamentar gastas de 2008 até 
 
 ## Ilustração dos dados obtidos:
 ![previa](https://github.com/WeDias/CotaDeputados/blob/master/ignorar/previa.png)
+![previa2](https://github.com/WeDias/CotaDeputados/blob/master/ignorar/previa2.png)
 
 ---
 ###### ✏️ Desenvolvido por: [*Wesley Dias*](https://github.com/WeDias)
