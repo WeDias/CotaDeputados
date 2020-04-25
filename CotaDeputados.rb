@@ -6,6 +6,19 @@
 # ------------------------------------------------------------- #
 
 require "json"
+require "csv"
+
+def salvar_dados(nome, texto="")
+  """
+  salvar_dados() Serve para salvar os dados coletados em um arquivo csv
+  :param nome: str, nome do arquivo
+  :param texto: str, texto que sera escrito
+  :return: None
+  """
+  File.open("Dados/#{nome}.csv", "a:UTF-8") do |salvar|
+    salvar.write "#{texto}\n"
+  end
+end
 
 ano = 2008
 while ano <= 2019
@@ -16,6 +29,7 @@ while ano <= 2019
   total = 0
   parlamentares = {}
   gasto_partidos = {}
+  puts "analisando #{ano}..."
   for dado in dados
     id = dado["numeroDeputadoID"]
     nome = dado["nomeParlamentar"]
@@ -43,10 +57,8 @@ while ano <= 2019
     end
     total += gasto
   end
-  arquivo.close
-  puts "-" * 100
-  puts "TOTAL GASTO EM #{ano}: R$ #{"%.2f" % total}"
-  puts "\nGASTOS POR POLITICO:"
+
+  salvar_dados("TotalGastoAno", "#{ano};#{"%.2f" % total}")
   parlamentares = parlamentares.sort_by{|chave, valor| valor[:gasto]}
 
   cont = 1
@@ -56,17 +68,57 @@ while ano <= 2019
     gasto = dados[:gasto]
     porc = 100 * gasto / total
     partido = dados[:partido]
-    puts "#{cont}-#{id}-#{partido}-#{nome}: R$ #{"%.2f" % gasto} #{"%.5f" %porc}%"
+    salvar_dados("GastoPolitico","#{cont};#{id};#{partido};#{nome};#{"%.2f" % gasto};#{"%.5f" %porc};#{ano}")
     cont += 1
   end
 
   cont = 1
-  puts "\nGASTOS POR PARTIDO POLITICO:"
   gasto_partidos = gasto_partidos.sort_by{|partido, valor| valor}
   for partido, valor in gasto_partidos.reverse
     porc = 100 * valor / total
-    puts "#{cont}-#{partido}: R$ #{"%.2f" % valor} #{"%.5f" % porc}%"
+    salvar_dados("GastoPartido", "#{cont};#{partido};#{"%.2f" % valor};#{"%.5f" % porc};#{ano}")
     cont += 1
   end
   ano += 1
 end
+
+dados = File.read("Dados/GastoPartido.csv")
+dados = CSV.parse(dados)
+for dado in dados
+  dado = dado[0].split(";")
+  posicao = dado[0].to_i
+  partido = dado[1]
+  gasto = dado[2]
+  porcen = dado[3]
+  ano = dado[4]
+  if posicao <= 5
+    if posicao == 1
+      salvar_dados("TopGastoPartido", "Os 5 partidos que mais gastaram em #{ano}")
+    end
+    salvar_dados("TopGastoPartido", "#{posicao};#{partido};#{gasto};#{porcen}")
+  elsif posicao == 6
+    salvar_dados("TopGastoPartido", "")
+  end
+end
+
+dados = File.read("Dados/GastoPolitico.csv")
+dados = CSV.parse(dados)
+for dado in dados
+  dado = dado[0].split(";")
+  posicao = dado[0].to_i
+  partido = dado[2]
+  nome = dado[3]
+  gasto = dado[4]
+  porcen = dado[5]
+  ano = dado[6]
+  if posicao <= 5
+    if posicao == 1
+      salvar_dados("TopGastoPolitico", "Os 5 deputados que mais gastaram em #{ano}")
+    end
+    salvar_dados("TopGastoPolitico", "#{posicao};#{partido};#{nome};#{gasto};#{porcen}")
+  elsif posicao == 6
+    salvar_dados("TopGastoPolitico", "")
+  end
+end
+
+puts "Analise completa !"
