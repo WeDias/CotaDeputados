@@ -9,12 +9,10 @@ require "json"
 require "csv"
 
 def salvar_dados(nome, texto="")
-  """
-  salvar_dados() Serve para salvar os dados coletados em um arquivo csv
-  :param nome: str, nome do arquivo
-  :param texto: str, texto que sera escrito
-  :return: None
-  """
+  # salvar_dados() Serve para salvar os dados coletados em um arquivo csv
+  # :param nome: str, nome do arquivo
+  # :param texto: str, texto que sera escrito
+  # :return: nil
   File.write("Dados/#{nome}.csv", "#{texto}\n", mode: "a:UTF-8")
 end
 
