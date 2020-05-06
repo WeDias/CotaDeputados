@@ -37,7 +37,7 @@ def salvar_dados(nome, texto = '')
 end
 
 { TotalGastoAno: 'Ano;TotalGasto',
-  TopGastoPolitico: 'Posicao;Nome;Gasto;PorcTotal;Ano',
+  TopGastoPolitico: 'Posicao;Id;Partido;Nome;Gasto;PorcTotal;Ano',
   TopGastoPartido: 'Posicao;Partido;Gasto;PorcTotal;Ano',
   GastoPolitico: 'Posicao;Id;Partido;Nome;Gasto;PorcTotal;Ano',
   GastoPartido: 'Posicao;Partido;Gasto;PorcTotal;Ano' }.each do |chave, valor|
