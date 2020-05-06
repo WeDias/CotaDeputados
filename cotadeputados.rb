@@ -1,4 +1,6 @@
-# CotaDeputados.rb
+# frozen_string_literal: true
+
+# cotadeputados.rb
 # Github:@WeDias
 
 # MIT License
@@ -23,46 +25,45 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-require "json"
-require "csv"
+require 'json'
+require 'csv'
 
-def salvar_dados(nome, texto="")
+def salvar_dados(nome, texto = '')
   # salvar_dados() Serve para salvar os dados coletados em um arquivo csv
   # :param nome: str, nome do arquivo
   # :param texto: str, texto que sera escrito
   # :return: nil
-  File.write("Dados/#{nome}.csv", "#{texto}\n", mode: "a:UTF-8")
+  File.write("Dados/#{nome}.csv", "#{texto}\n", mode: 'a:UTF-8')
 end
 
-for arquivo in [["TotalGastoAno", "Ano;TotalGasto"],
-                ["TopGastoPolitico", "Posicao;Nome;Gasto;PorcTotal;Ano"],
-                ["TopGastoPartido", "Posicao;Partido;Gasto;PorcTotal;Ano"],
-                ["GastoPolitico", "Posicao;Id;Partido;Nome;Gasto;PorcTotal;Ano"],
-                ["GastoPartido", "Posicao;Partido;Gasto;PorcTotal;Ano"]]
-  File.write("Dados/#{arquivo[0]}.csv", "#{arquivo[1]}\n", mode: "w:UTF-8")
+{ TotalGastoAno: 'Ano;TotalGasto',
+  TopGastoPolitico: 'Posicao;Nome;Gasto;PorcTotal;Ano',
+  TopGastoPartido: 'Posicao;Partido;Gasto;PorcTotal;Ano',
+  GastoPolitico: 'Posicao;Id;Partido;Nome;Gasto;PorcTotal;Ano',
+  GastoPartido: 'Posicao;Partido;Gasto;PorcTotal;Ano' }.each do |chave, valor|
+  File.write("Dados/#{chave[0..chave.length]}.csv",
+             "#{valor}\n", mode: 'w:UTF-8')
 end
 
 ano = 2008
 while ano <= 2019
   arquivo = File.read("Dados/Ano-#{ano}.json")
   dados = JSON.parse(arquivo)
-  dados = dados["dados"]
+  dados = dados['dados']
 
   total = 0
   parlamentares = {}
   gasto_partidos = {}
   puts "analisando #{ano}..."
-  for dado in dados
-    id = dado["numeroDeputadoID"]
-    nome = dado["nomeParlamentar"]
-    gasto = dado["valorLiquido"].to_f
-    partido = dado["siglaPartido"]
+  dados.each do |dado|
+    id = dado['numeroDeputadoID']
+    nome = dado['nomeParlamentar']
+    gasto = dado['valorLiquido'].to_f
+    partido = dado['siglaPartido']
 
-    if partido.empty?
-      partido = nome
-    end
+    partido = nome if partido.empty?
 
-    if not gasto_partidos.include?(partido)
+    if !gasto_partidos.include?(partido)
       gasto_partidos[partido] = gasto
     else
       gasto_anterior = gasto_partidos[partido].to_f
@@ -70,8 +71,11 @@ while ano <= 2019
     end
 
     if nome != partido
-      if not parlamentares.include?(nome)
-        parlamentares[nome] = {id: id, partido: partido, nome: nome,gasto: gasto}
+      if !parlamentares.include?(nome)
+        parlamentares[nome] = { id: id,
+                                partido: partido,
+                                nome: nome,
+                                gasto: gasto }
       else
         gasto_anterior = parlamentares[nome][:gasto].to_f
         parlamentares[nome][:gasto] = gasto_anterior + gasto
@@ -79,33 +83,39 @@ while ano <= 2019
     end
     total += gasto
   end
-  salvar_dados("TotalGastoAno", "#{ano};#{total}")
-  parlamentares = parlamentares.sort_by{|chave, valor| valor[:gasto]}
+  salvar_dados('TotalGastoAno', "#{ano};#{total}")
+  parlamentares = parlamentares.sort_by { |_chave, valor| valor[:gasto] }
 
   cont = 1
-  for parlamentar, dados in parlamentares.reverse
-    id = dados[:id]
-    nome = dados[:nome]
-    gasto = dados[:gasto]
+  parlamentares.reverse.each do |_parlamentar, dado|
+    id = dado[:id]
+    nome = dado[:nome]
+    gasto = dado[:gasto]
     porc = 100 * gasto / total
-    partido = dados[:partido]
+    partido = dado[:partido]
     if cont <= 5
-      salvar_dados("TopGastoPolitico", "#{cont};#{id};#{partido};#{nome};#{"%.2f" % gasto};#{"%.5f" %porc};#{ano}")
+      salvar_dados('TopGastoPolitico',
+                   "#{cont};#{id};#{partido};#{nome};"\
+                        "#{gasto.round(2)};#{porc.round(5)};#{ano}")
     end
-    salvar_dados("GastoPolitico","#{cont};#{id};#{partido};#{nome};#{"%.2f" % gasto};#{"%.5f" %porc};#{ano}")
+    salvar_dados('GastoPolitico',
+                 "#{cont};#{id};#{partido};#{nome};"\
+                      "#{gasto.round(2)};#{porc.round(5)};#{ano}")
     cont += 1
   end
 
   cont = 1
-  gasto_partidos = gasto_partidos.sort_by{|partido, valor| valor}
-  for partido, valor in gasto_partidos.reverse
+  gasto_partidos = gasto_partidos.sort_by { |_partido, valor| valor }
+  gasto_partidos.reverse.each do |partido, valor|
     porc = 100 * valor / total
     if cont <= 5
-      salvar_dados("TopGastoPartido", "#{cont};#{partido};#{"%.2f" % valor};#{"%.5f" % porc};#{ano}")
+      salvar_dados('TopGastoPartido', "#{cont};#{partido};"\
+                        "#{valor.round(2)};#{porc.round(5)};#{ano}")
     end
-    salvar_dados("GastoPartido", "#{cont};#{partido};#{"%.2f" % valor};#{"%.5f" % porc};#{ano}")
+    salvar_dados('GastoPartido', "#{cont};#{partido};"\
+                      "#{valor.round(2)};#{porc.round(5)};#{ano}")
     cont += 1
   end
   ano += 1
 end
-puts "Analise completa !"
+puts 'Analise completa !'
